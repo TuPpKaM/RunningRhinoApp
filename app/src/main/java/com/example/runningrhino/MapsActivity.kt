@@ -10,6 +10,8 @@ import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.runningrhino.databinding.ActivityMapsBinding
@@ -62,12 +64,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(findViewById(R.id.my_toolbar))
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_toolbar, menu)
+        return true
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         Log.d("GPS", "onMapReady")
         mMap = googleMap
@@ -78,6 +87,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_settings -> {
+                // Handle the settings menu item click here
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
     }
 
     private fun checkLocationPermissions(): Boolean {
