@@ -20,7 +20,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
@@ -35,10 +35,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val binder = service as TrackingService.LocalBinder
             mService = binder.getService()
             mBound = true
-            checkLocation()
+            if (checkLocationPermissions()) {
+                startLocationTracking()
+            }
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
+            Log.d("GPS", "onServiceDisconnected")
             mBound = false
         }
     }
@@ -55,16 +58,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     override fun onMapReady(googleMap: GoogleMap) {
         Log.d("GPS", "onMapReady")
         mMap = googleMap
@@ -81,8 +74,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    private fun checkLocation() {
-        Log.d("GPS", "checkLocation")
+    private fun checkLocationPermissions(): Boolean {
+        Log.d("GPS", "checkLocationPermissions")
         if (ActivityCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -96,11 +89,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
                 101
             )
-            return
+            return false
         }
+        return true
+    }
 
+    private fun startLocationTracking(){
+        Log.d("GPS", "startLocationTracking")
+        mService.setCallback(this@MapsActivity)
         mService.setLocationClient(fusedLocationProviderClient)
         mService.startLocationUpdates()
 
+    }
+
+    override fun onDataReceived(data: String) {
+        Log.d("GPS", "-----$data")
     }
 }
