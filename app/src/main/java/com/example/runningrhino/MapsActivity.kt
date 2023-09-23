@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -18,10 +19,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
@@ -32,11 +30,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
     private lateinit var mService: TrackingService
     private var mBound: Boolean = false
 
-    private var locationHistory: ArrayList<LatLng>? = null
-    private var previousLocation: LatLng? = null
-    private var polylines: ArrayList<Polyline>? = null
-    private val debug = true
-    private var testint: Int = 0
+    private var locationHistory: ArrayList<Location> = ArrayList<Location>()
+    private var previousLocation: Location? = null
+    private var polylines: ArrayList<Polyline> = ArrayList<Polyline>()
+
+    private var distance: Float = 0F
+
+    private var debugTestInt: Int = 0
 
     private val connection = object : ServiceConnection {
 
@@ -111,31 +111,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
     }
 
-    /**
-     * Changes format from string to LatLng
-     * @param data String containing the location "lat:lng"
-     * @return LatLng
-     */
-    private fun makeLatLng(data: String): LatLng {
-        val cordString = data.split(":")
-        var lat = cordString[0].toDouble()
-        var lng = cordString[1].toDouble()
+    private fun debugGps(location: Location): Location {
+        val lat = location.latitude + (debugTestInt * 0.0001)
+        val lng = location.longitude - (debugTestInt * 0.0001)
 
-        //make location drift during debug
-        if (debug) {
-            lat += (testint * 0.0001)
-            lng -= (testint * 0.0001)
-            testint += 1
-        }
+        location.latitude = lat
+        location.longitude = lng
 
-        return LatLng(lat, lng)
+        debugTestInt += 1
+
+        return location
     }
 
     /**
      * Draws a continuous polyline on the Map with each update
-     * @param currentLocation Draws a polyline to this location
+     * @param currentLocation Draws a polyline to this location from previous location
      */
-    private fun drawPolyline(currentLocation: LatLng) {
+    private fun drawPolyline(currentLocation: Location) {
         val lineOptions = PolylineOptions()
             .add(LatLng(previousLocation!!.latitude, previousLocation!!.longitude))
             .add(LatLng(currentLocation.latitude, currentLocation.longitude))
@@ -143,40 +135,60 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
             .width(5f)
 
         val polyline: Polyline = mMap.addPolyline(lineOptions)
-        if (polylines == null) {
-            polylines = arrayListOf(polyline)
-        } else {
-            polylines!!.add(polyline)
-        }
+        polylines.add(polyline)
+
+        registerDistance(currentLocation, previousLocation!!)
 
         previousLocation = currentLocation
     }
 
     /**
      * Adds a marker on the first position
-     * @param start LatLng
+     * @param start Location
      */
-    private fun drawStartMarker(start: LatLng) {
+    private fun drawStartMarker(start: Location) {
         previousLocation = start
-        mMap.addMarker(MarkerOptions().position(start).title("Start"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 16F))
+        val markerOptions = MarkerOptions()
+            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+        mMap.addMarker(
+            markerOptions.position(LatLng(start.latitude, start.longitude)).title("Start")
+        )
+        mMap.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                LatLng(start.latitude, start.longitude),
+                16F
+            )
+        )
     }
 
     /**
-     * Callback from TrackingService. Saves the new cordinates in the history and
-     * calls drawPolyline to add it on the Map
-     * @param data String containing the location "lat:lng"
+     * Callback from TrackingService. Saves the new cordinates in the history, calls
+     * for the distance to be drawn on the map and added to total distance.
+     * @param location Location
      */
-    override fun onDataReceived(data: String) {
-        Log.d("GPS", "-----$data")
-        if (locationHistory == null) {
-            locationHistory = arrayListOf(makeLatLng(data))
-            drawStartMarker(makeLatLng(data))
-        } else {
-            locationHistory!!.add(makeLatLng(data))
+    override fun onDataReceived(data: Location) {
+        var location = data
+
+        if (Constants.DEBUG) {
+            location = Location(debugGps(data))
         }
-        drawPolyline(makeLatLng(data))
-        Log.d("GPS", locationHistory.toString())
+
+        Log.d("GPS", "-----${location}")
+
+        if (locationHistory.isEmpty()) {
+            drawStartMarker(location)
+        }
+
+        locationHistory.add(location)
+
+        drawPolyline(location)
+    }
+
+    private fun registerDistance(p1: Location, p2: Location) {
+        Log.d("GPS", "Before:${distance}m")
+        distance += p1.distanceTo(p2)
+        Log.d("GPS", "After:${distance}m")
+
     }
 
 }

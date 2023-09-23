@@ -1,10 +1,10 @@
 package com.example.runningrhino
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
@@ -41,13 +41,16 @@ class TrackingService : Service() {
 
     fun startLocationUpdates() {
         Log.d("GPS", "startLocationUpdates")
-        val locationRequest = LocationRequest.Builder(5000L).build()
+        val locationRequest = LocationRequest.Builder(Constants.LOCATION_UPDATE_FREQ).build()
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
                 for (location in p0.locations) {
-                    Log.d("GPS", "${location.latitude}:${location.longitude}")
-                    sendDataToActivity("${location.latitude}:${location.longitude}")
+                    Log.d(
+                        "GPS",
+                        "${location.latitude}:${location.longitude}:${location.speed}:${location.time}"
+                    )
+                    sendDataToActivity(location)
                 }
             }
         }
@@ -70,7 +73,7 @@ class TrackingService : Service() {
         )
     }
 
-    fun sendDataToActivity(data: String) {
+    fun sendDataToActivity(data: Location) {
         trackingCallback?.onDataReceived(data)
     }
 
