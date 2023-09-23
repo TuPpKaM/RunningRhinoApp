@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -19,6 +20,9 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
@@ -27,6 +31,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var mService: TrackingService
     private var mBound: Boolean = false
+
+    private var locationHistory: ArrayList<LatLng>? = null
+    private var previousLocation: LatLng? = null
+    private var polylines: ArrayList<Polyline>? = null
+    private val debug = true
+    private var testint: Int = 0
 
     private val connection = object : ServiceConnection {
 
@@ -37,7 +47,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
             mBound = true
             if (checkLocationPermissions()) {
                 startLocationTracking()
-            }
+            } //TODO: retry after asking for permission
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -62,7 +72,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
         Log.d("GPS", "onMapReady")
         mMap = googleMap
 
-        val start = LatLng(55.60932012493261, 12.999741809051638)
+        val start = LatLng(56.0705867, 12.7036555)
         mMap.addMarker(MarkerOptions().position(start).title("Start"))
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 16F))
 
@@ -84,9 +94,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
+            ActivityCompat.requestPermissions( //TODO: move to own function
                 this,
-                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
                 101
             )
             return false
@@ -94,7 +107,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
         return true
     }
 
-    private fun startLocationTracking(){
+    private fun startLocationTracking() {
         Log.d("GPS", "startLocationTracking")
         mService.setCallback(this@MapsActivity)
         mService.setLocationClient(fusedLocationProviderClient)
@@ -102,7 +115,62 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
     }
 
+    /**
+     * Changes format from string to LatLng
+     * @param data String containing the location "lat:lng"
+     * @return LatLng
+     */
+    private fun makeLatLng(data: String): LatLng {
+        val cordString = data.split(":")
+        var lat = cordString[0].toDouble()
+        var lng = cordString[1].toDouble()
+
+        //make location drift during debug
+        if (debug) {
+            lat += (testint * 0.0001)
+            lng -= (testint * 0.0001)
+            testint += 1
+        }
+
+        return LatLng(lat, lng)
+    }
+
+    /**
+     * Draws a continuous polyline on the Map with each update
+     * @param currentLocation Draws a polyline to this location
+     */
+    private fun drawPolyline(currentLocation: LatLng) {
+        val lineOptions = PolylineOptions()
+            .add(LatLng(previousLocation!!.latitude, previousLocation!!.longitude))
+            .add(LatLng(currentLocation.latitude, currentLocation.longitude))
+            .color(Color.RED)
+            .width(5f)
+
+        val polyline: Polyline = mMap.addPolyline(lineOptions)
+        if (polylines == null) {
+            polylines = arrayListOf(polyline)
+        } else {
+            polylines!!.add(polyline)
+        }
+
+        previousLocation = currentLocation
+    }
+
+    /**
+     * Callback from TrackingService. Saves the new cordinates in the history and
+     * calls drawPolyline to add it on the Map
+     * @param data String containing the location "lat:lng"
+     */
     override fun onDataReceived(data: String) {
         Log.d("GPS", "-----$data")
+        if (locationHistory == null) {
+            locationHistory = arrayListOf(makeLatLng(data))
+            previousLocation = makeLatLng(data)
+        } else {
+            locationHistory!!.add(makeLatLng(data))
+        }
+        drawPolyline(makeLatLng(data))
+        Log.d("GPS", locationHistory.toString())
     }
+
 }
