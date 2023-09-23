@@ -72,10 +72,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
         Log.d("GPS", "onMapReady")
         mMap = googleMap
 
-        val start = LatLng(56.0705867, 12.7036555)
-        mMap.addMarker(MarkerOptions().position(start).title("Start"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 16F))
-
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         Intent(this, TrackingService::class.java).also { intent ->
@@ -157,6 +153,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
     }
 
     /**
+     * Adds a marker on the first position
+     * @param start LatLng
+     */
+    private fun drawStartMarker(start: LatLng) {
+        previousLocation = start
+        mMap.addMarker(MarkerOptions().position(start).title("Start"))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 16F))
+    }
+
+    /**
      * Callback from TrackingService. Saves the new cordinates in the history and
      * calls drawPolyline to add it on the Map
      * @param data String containing the location "lat:lng"
@@ -165,7 +171,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
         Log.d("GPS", "-----$data")
         if (locationHistory == null) {
             locationHistory = arrayListOf(makeLatLng(data))
-            previousLocation = makeLatLng(data)
+            drawStartMarker(makeLatLng(data))
         } else {
             locationHistory!!.add(makeLatLng(data))
         }
