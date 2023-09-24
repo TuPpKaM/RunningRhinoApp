@@ -45,12 +45,7 @@ class MapsFragment : Fragment() {
             val mLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), map)
             mLocationOverlay.enableMyLocation()
             map.overlays.add(mLocationOverlay)
-
-            mLocationOverlay.runOnFirstFix {
-                map.overlays.clear()
-                map.overlays.add(mLocationOverlay)
-                mapController.setCenter(mLocationOverlay.myLocation)
-            }
+            mapController.setCenter(mLocationOverlay.myLocation)
         }
     }
 

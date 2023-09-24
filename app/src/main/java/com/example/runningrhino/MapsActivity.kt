@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
@@ -20,12 +19,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.runningrhino.databinding.ActivityMapsBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.*
 
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
+class MapsActivity : AppCompatActivity(), TrackingCallback {
 
     private lateinit var binding: ActivityMapsBinding
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -34,7 +30,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
     private var locationHistory: ArrayList<Location> = ArrayList<Location>()
     private var previousLocation: Location? = null
-    private var polylines: ArrayList<Polyline> = ArrayList<Polyline>()
+    private var lines: ArrayList<String> = ArrayList<String>()
 
     private var distance: Float = 0F
 
@@ -80,29 +76,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
         }
 
         navController.navigate(R.id.mapsFragment)
-
-        //val mapFragment = supportFragmentManager
-        //    .findFragmentById(R.id.map) as SupportMapFragment
-        //mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar, menu)
         return true
-    }
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        Log.d("GPS", "onMapReady")
-        //mMap = googleMap
-        /*
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-
-        Intent(this, TrackingService::class.java).also { intent ->
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
-
-         */
-
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -176,14 +154,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
      * @param currentLocation Draws a polyline to this location from previous location
      */
     private fun drawPolyline(currentLocation: Location) {
-        val lineOptions = PolylineOptions()
-            .add(LatLng(previousLocation!!.latitude, previousLocation!!.longitude))
-            .add(LatLng(currentLocation.latitude, currentLocation.longitude))
-            .color(Color.RED)
-            .width(5f)
-
-        //val polyline: Polyline = mMap.addPolyline(lineOptions)
-        //polylines.add(polyline)
+        //draw line
 
         registerDistance(currentLocation, previousLocation!!)
 
@@ -196,19 +167,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
      */
     private fun drawStartMarker(start: Location) {
         previousLocation = start
-        /*
-        val markerOptions = MarkerOptions()
-            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-        mMap.addMarker(
-            markerOptions.position(LatLng(start.latitude, start.longitude)).title("Start")
-        )
-        mMap.moveCamera(
-            CameraUpdateFactory.newLatLngZoom(
-                LatLng(start.latitude, start.longitude),
-                16F
-            )
-        )
-        */
+
+        //add marker
     }
 
     /**
