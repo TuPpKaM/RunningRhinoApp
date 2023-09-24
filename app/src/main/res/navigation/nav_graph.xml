@@ -3,21 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph.xml"
-    app:startDestination="@id/mapsActivity">
+    app:startDestination="@id/mapsFragment">
 
     <activity
         android:id="@+id/mapsActivity"
         android:name="com.example.runningrhino.MapsActivity"
-        android:label="MapsActivity"></activity>
+        android:label="MapsActivity" />
 
     <fragment
         android:id="@+id/startRunFragment"
         android:name="com.example.runningrhino.running.StartRunFragment"
-        android:label="StartRunFragment" />
+        android:label="StartRunFragment">
+        <action
+            android:id="@+id/action_startRunFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/endRunFragment"
         android:name="com.example.runningrhino.running.EndRunFragment"
-        android:label="EndRunFragment" />
+        android:label="EndRunFragment">
+        <action
+            android:id="@+id/action_endRunFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/mapsFragment"
         android:name="com.example.runningrhino.MapsFragment"

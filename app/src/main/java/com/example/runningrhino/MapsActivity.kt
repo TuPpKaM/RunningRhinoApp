@@ -14,19 +14,19 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.runningrhino.databinding.ActivityMapsBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
-    private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var mService: TrackingService
@@ -68,16 +68,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
         setSupportActionBar(findViewById(R.id.my_toolbar))
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        //val navController = findNavController(R.id.nav_host_fragment)
-        //val appBarConfiguration = AppBarConfiguration(navController.graph)
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        setupActionBarWithNavController(navController)
 
-        //val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        //val navController = navHostFragment.navController
-        //setupActionBarWithNavController(navController)
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        Intent(this, TrackingService::class.java).also { intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+
+        navController.navigate(R.id.mapsFragment)
+
+        //val mapFragment = supportFragmentManager
+        //    .findFragmentById(R.id.map) as SupportMapFragment
+        //mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -87,21 +93,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         Log.d("GPS", "onMapReady")
-        mMap = googleMap
-
+        //mMap = googleMap
+        /*
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         Intent(this, TrackingService::class.java).also { intent ->
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
+         */
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        //val navController = findNavController(R.id.nav_host_fragment)
+        val navController = findNavController(R.id.nav_host_fragment)
         when (item.itemId) {
             R.id.action_settings -> {
-                //navController.navigate(R.id.action_mapsActivity_to_startRunFragment)
+                navController.navigate(R.id.action_mapsFragment_to_startRunFragment)
+                return true
+            }
+            R.id.action_about -> {
+                navController.navigate(R.id.action_startRunFragment_to_mapsFragment)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -116,11 +128,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_NETWORK_STATE
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.INTERNET
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions( //TODO: move to own function
                 this,
                 arrayOf(
+                    android.Manifest.permission.ACCESS_NETWORK_STATE,
+                    android.Manifest.permission.INTERNET,
                     android.Manifest.permission.ACCESS_FINE_LOCATION,
                     android.Manifest.permission.ACCESS_COARSE_LOCATION
                 ),
@@ -162,8 +182,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
             .color(Color.RED)
             .width(5f)
 
-        val polyline: Polyline = mMap.addPolyline(lineOptions)
-        polylines.add(polyline)
+        //val polyline: Polyline = mMap.addPolyline(lineOptions)
+        //polylines.add(polyline)
 
         registerDistance(currentLocation, previousLocation!!)
 
@@ -176,6 +196,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
      */
     private fun drawStartMarker(start: Location) {
         previousLocation = start
+        /*
         val markerOptions = MarkerOptions()
             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
         mMap.addMarker(
@@ -187,6 +208,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
                 16F
             )
         )
+        */
     }
 
     /**
