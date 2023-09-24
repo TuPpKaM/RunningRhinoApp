@@ -64,8 +64,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
 
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         setSupportActionBar(findViewById(R.id.my_toolbar))
         supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        //val navController = findNavController(R.id.nav_host_fragment)
+        //val appBarConfiguration = AppBarConfiguration(navController.graph)
+
+        //val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        //val navController = navHostFragment.navController
+        //setupActionBarWithNavController(navController)
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -90,9 +98,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, TrackingCallback {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        //val navController = findNavController(R.id.nav_host_fragment)
         when (item.itemId) {
             R.id.action_settings -> {
-                // Handle the settings menu item click here
+                //navController.navigate(R.id.action_mapsActivity_to_startRunFragment)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
