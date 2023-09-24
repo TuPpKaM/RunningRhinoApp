@@ -1,4 +1,4 @@
-package com.example.runningrhino
+package com.example.runningrhino.tracking
 
 import android.location.Location
 

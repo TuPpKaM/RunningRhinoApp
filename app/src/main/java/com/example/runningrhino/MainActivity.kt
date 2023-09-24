@@ -11,26 +11,34 @@ import android.os.IBinder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.runningrhino.databinding.ActivityMapsBinding
+import com.example.runningrhino.tracking.TrackingCallback
+import com.example.runningrhino.tracking.TrackingService
+import com.example.runningrhino.tracking.TrackingViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Polyline
 
 
-class MapsActivity : AppCompatActivity(), TrackingCallback {
+class MainActivity : AppCompatActivity(), TrackingCallback {
 
     private lateinit var binding: ActivityMapsBinding
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var mService: TrackingService
     private var mBound: Boolean = false
 
+    private val sharedViewModel: TrackingViewModel by viewModels()
+
     private var locationHistory: ArrayList<Location> = ArrayList<Location>()
     private var previousLocation: Location? = null
-    private var lines: ArrayList<String> = ArrayList<String>()
+    private var lineList: ArrayList<Polyline> = ArrayList<Polyline>()
 
     private var distance: Float = 0F
 
@@ -131,7 +139,7 @@ class MapsActivity : AppCompatActivity(), TrackingCallback {
 
     private fun startLocationTracking() {
         Log.d("GPS", "startLocationTracking")
-        mService.setCallback(this@MapsActivity)
+        mService.setCallback(this@MainActivity)
         mService.setLocationClient(fusedLocationProviderClient)
         mService.startLocationUpdates()
 
@@ -154,7 +162,16 @@ class MapsActivity : AppCompatActivity(), TrackingCallback {
      * @param currentLocation Draws a polyline to this location from previous location
      */
     private fun drawPolyline(currentLocation: Location) {
-        //draw line
+        Log.d("GPS", "drawPolyLine ${currentLocation}")
+        val geoPoints = arrayListOf(
+            GeoPoint(currentLocation.latitude, currentLocation.longitude), GeoPoint(
+                previousLocation!!.latitude, previousLocation!!.longitude
+            )
+        )
+        val line = Polyline()
+        line.setPoints(geoPoints)
+        sharedViewModel.addLine(line)
+        Log.d("GPS", "drawPolyLine ${line}")
 
         registerDistance(currentLocation, previousLocation!!)
 
@@ -167,7 +184,6 @@ class MapsActivity : AppCompatActivity(), TrackingCallback {
      */
     private fun drawStartMarker(start: Location) {
         previousLocation = start
-
         //add marker
     }
 

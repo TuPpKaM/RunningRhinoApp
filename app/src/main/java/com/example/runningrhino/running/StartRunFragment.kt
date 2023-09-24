@@ -5,30 +5,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.example.runningrhino.R
 import com.example.runningrhino.databinding.FragmentStartRunBinding
+import com.example.runningrhino.tracking.TrackingViewModel
 
 class StartRunFragment : Fragment(R.layout.fragment_start_run) {
 
     private var _binding: FragmentStartRunBinding? = null
-
     private val binding get() = _binding!!
+
+    private val sharedViewModel: TrackingViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val dashboardViewModel =
-            ViewModelProvider(this)[StartRunViewModel::class.java]
-
         _binding = FragmentStartRunBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        dashboardViewModel.text.observe(viewLifecycleOwner) {
-            //
-        }
         return root
     }
 
