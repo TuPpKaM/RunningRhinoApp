@@ -159,7 +159,6 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
 
     /**
      * Draws a continuous polyline on the Map with each update
-     * @param currentLocation Draws a polyline to this location from previous location
      */
     private fun drawPolyline(currentLocation: Location) {
         Log.d("GPS", "drawPolyLine ${currentLocation}")
@@ -180,7 +179,6 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
 
     /**
      * Adds a marker on the first position
-     * @param start Location
      */
     private fun drawStartMarker(start: Location) {
         previousLocation = start
