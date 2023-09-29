@@ -2,4 +2,6 @@
     <string name="app_name">RunningRhino</string>
     <string name="title_activity_maps">Running Rhino</string>
     <string name="cdesc_app_icon">App Icon</string>
+    <string name="channel_name">Active</string>
+    <string name="channel_description">Running Rhino is active and tracking</string>
 </resources>
