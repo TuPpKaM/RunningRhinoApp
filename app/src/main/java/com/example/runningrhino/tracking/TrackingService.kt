@@ -1,6 +1,7 @@
 package com.example.runningrhino.tracking
 
 import android.Manifest
+import android.app.Notification
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,8 +10,11 @@ import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import android.widget.RemoteViews
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import com.example.runningrhino.Constants
+import com.example.runningrhino.R
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -28,16 +32,32 @@ class TrackingService : Service() {
 
     override fun onBind(p0: Intent?): IBinder {
         Log.d("GPS", "onBind Service")
+        startForeground(Constants.FOREGROUND_SERVICE_NOTIFICATION_ID, createServiceNotification())
         return binder
     }
 
     fun setCallback(callback: TrackingCallback) {
-       trackingCallback = callback
+        trackingCallback = callback
     }
 
     fun setLocationClient(client: FusedLocationProviderClient) {
         Log.d("GPS", "setLocationClient")
         fusedLocationProviderClient = client
+    }
+
+    private fun createServiceNotification(): Notification {
+        val notificationLayout =
+            RemoteViews(packageName, R.layout.notification_foreground_gps_small)
+        val notificationLayoutExpanded =
+            RemoteViews(packageName, R.layout.notification_foreground_gps_large)
+
+        val builder = NotificationCompat.Builder(this, Constants.FOREGROUND_SERVICE_CHANNEL)
+            .setSmallIcon(R.drawable.rhino)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(notificationLayout)
+            .setCustomBigContentView(notificationLayoutExpanded)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        return builder.build()
     }
 
     fun startLocationUpdates() {

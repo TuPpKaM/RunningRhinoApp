@@ -17,8 +17,6 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -88,10 +86,8 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
-        //TODO: testing
         checkNotificationPermission()
-        createNotificationChannel("10")
-        startNotification("10")
+        createNotificationChannel(Constants.FOREGROUND_SERVICE_CHANNEL)
 
         navController.navigate(R.id.mapsFragment)
     }
@@ -129,6 +125,21 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
         )
         if (ActivityCompat.checkSelfPermission(
                 this,
+                android.Manifest.permission.FOREGROUND_SERVICE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    android.Manifest.permission.FOREGROUND_SERVICE
+                ),
+                101
+            )
+            return false
+        }
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
                 android.Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
@@ -145,6 +156,8 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
     }
 
     private fun createNotificationChannel(cid: String) {
+        //TODO: REMAKE
+
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is not in the Support Library.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -163,6 +176,8 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
     }
 
     private fun checkLocationPermissions(): Boolean {
+        //TODO: REMAKE
+
         Log.d("GPS", "checkLocationPermissions")
         Log.d(
             "GPS",
@@ -217,7 +232,7 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
                     )
                 }"
             )
-            ActivityCompat.requestPermissions( //TODO: move to own function
+            ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
                     android.Manifest.permission.ACCESS_FINE_LOCATION,
@@ -228,22 +243,6 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
             return false
         }
         return true
-    }
-
-    private fun startNotification(cid: String) {
-        var builder = NotificationCompat.Builder(this, cid)
-            .setSmallIcon(R.drawable.rhino)
-            .setContentTitle("App is running")
-            .setContentText("Much longer text that cannot fit one line...")
-            .setStyle(
-                NotificationCompat.BigTextStyle()
-                    .bigText("Much longer text that cannot fit one line...")
-            )
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-        with(NotificationManagerCompat.from(this)) {
-            notify(666, builder.build())
-        }
     }
 
     private fun startLocationTracking() {

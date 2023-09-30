@@ -2,6 +2,13 @@
     <string name="app_name">RunningRhino</string>
     <string name="title_activity_maps">Running Rhino</string>
     <string name="cdesc_app_icon">App Icon</string>
-    <string name="channel_name">Active</string>
-    <string name="channel_description">Running Rhino is active and tracking</string>
+    <string name="channel_name">GPS on</string>
+    <string name="channel_description">Running Rhino will show a notification while it is using GPS to track your activity</string>
+
+    <!-- foreground_notification -->
+    <string name="foreground_notification_small_title">GPS Tracker is active</string>
+    <string name="foreground_notification_large_title">Activity tracking is on and using the GPS</string>
+    <string name="foreground_notification_large_body">Press PAUSE to pause the activity or STOP when you are finished!</string>
+    <string name="foreground_notification_pause">Pause</string>
+    <string name="foreground_notification_stop">Stop</string>
 </resources>
