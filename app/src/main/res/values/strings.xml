@@ -5,6 +5,9 @@
     <string name="channel_name">GPS on</string>
     <string name="channel_description">Running Rhino will show a notification while it is using GPS to track your activity</string>
 
+    <!-- start_run_fragment -->
+    <string name="start_run_fragment_start_button">Start your run</string>
+
     <!-- foreground_notification -->
     <string name="foreground_notification_small_title">GPS Tracker is active</string>
     <string name="foreground_notification_large_title">Activity tracking is on and using the GPS</string>

@@ -54,9 +54,6 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
             val binder = service as TrackingService.LocalBinder
             mService = binder.getService()
             mBound = true
-            if (checkLocationPermissions()) {
-                startLocationTracking()
-            } //TODO: retry after asking for permission
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -84,6 +81,13 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
 
         Intent(this, TrackingService::class.java).also { intent ->
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+
+        sharedViewModel.tracking.observe(this) {
+            if (it && checkLocationPermissions() && mBound) {
+                Log.d("GPS", "start tracking observed, time = ${sharedViewModel.startTime.value}")
+                startLocationTracking()
+            }
         }
 
         checkNotificationPermission()
@@ -291,6 +295,11 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
     private fun drawStartMarker(start: Location) {
         previousLocation = start
         //add marker
+    }
+
+    override fun onFix(data: Boolean) {
+        Log.d("GPS", "service replied, fix = ${data}")
+        sharedViewModel.setFix(data)
     }
 
     /**

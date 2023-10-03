@@ -6,6 +6,7 @@ abstract class Constants {
     companion object {
         const val DEBUG: Boolean = true
         const val LOCATION_UPDATE_FREQ: Long = 5000L
+        const val LOCATION_FIX_WAIT: Long = 5000L
         const val CAMERA_UPDATE_FREQ: Int = 5
         const val START_ZOOM: Int = 18
         const val STROKE_COLOR: Int = Color.CYAN

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Binder
+import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
@@ -25,6 +26,8 @@ class TrackingService : Service() {
     private var trackingCallback: TrackingCallback? = null
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+    private val handler = Handler(Looper.getMainLooper())
+
 
     inner class LocalBinder : Binder() {
         fun getService(): TrackingService = this@TrackingService
@@ -32,7 +35,6 @@ class TrackingService : Service() {
 
     override fun onBind(p0: Intent?): IBinder {
         Log.d("GPS", "onBind Service")
-        startForeground(Constants.FOREGROUND_SERVICE_NOTIFICATION_ID, createServiceNotification())
         return binder
     }
 
@@ -62,6 +64,15 @@ class TrackingService : Service() {
 
     fun startLocationUpdates() {
         Log.d("GPS", "startLocationUpdates")
+        startForeground(Constants.FOREGROUND_SERVICE_NOTIFICATION_ID, createServiceNotification())
+
+        handler.postDelayed({
+            trackingCallback?.onFix(true)
+            locationUpdates()
+        }, Constants.LOCATION_FIX_WAIT)
+    }
+
+    private fun locationUpdates() {
         val locationRequest = LocationRequest.Builder(Constants.LOCATION_UPDATE_FREQ).build()
 
         locationCallback = object : LocationCallback() {
