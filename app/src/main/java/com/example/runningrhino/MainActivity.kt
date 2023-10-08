@@ -159,6 +159,13 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
         return true
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent?.action == "BUTTON_CLICK_ACTION_STOP") {
+            Log.d("GPS", "BUTTON_CLICK_ACTION_STOP")
+        }
+    }
+
     private fun createNotificationChannel(cid: String) {
         //TODO: REMAKE
 

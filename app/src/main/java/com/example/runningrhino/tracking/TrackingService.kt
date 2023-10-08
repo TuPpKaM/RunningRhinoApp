@@ -2,6 +2,7 @@ package com.example.runningrhino.tracking
 
 import android.Manifest
 import android.app.Notification
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,11 +16,13 @@ import android.widget.RemoteViews
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.example.runningrhino.Constants
+import com.example.runningrhino.MainActivity
 import com.example.runningrhino.R
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
+
 
 class TrackingService : Service() {
     private val binder = LocalBinder()
@@ -27,7 +30,6 @@ class TrackingService : Service() {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private val handler = Handler(Looper.getMainLooper())
-
 
     inner class LocalBinder : Binder() {
         fun getService(): TrackingService = this@TrackingService
@@ -52,6 +54,14 @@ class TrackingService : Service() {
             RemoteViews(packageName, R.layout.notification_foreground_gps_small)
         val notificationLayoutExpanded =
             RemoteViews(packageName, R.layout.notification_foreground_gps_large)
+
+        val buttonIntent = Intent(this, MainActivity::class.java)
+        buttonIntent.action = "BUTTON_CLICK_ACTION_STOP"
+
+        val buttonPendingIntent =
+            PendingIntent.getActivity(this, 0, buttonIntent, PendingIntent.FLAG_IMMUTABLE)
+
+        notificationLayoutExpanded.setOnClickPendingIntent(R.id.stop_button, buttonPendingIntent)
 
         val builder = NotificationCompat.Builder(this, Constants.FOREGROUND_SERVICE_CHANNEL)
             .setSmallIcon(R.drawable.rhino)

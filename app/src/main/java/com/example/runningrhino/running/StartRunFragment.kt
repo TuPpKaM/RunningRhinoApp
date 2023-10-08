@@ -37,6 +37,7 @@ class StartRunFragment : Fragment(R.layout.fragment_start_run) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         val startButton: Button = view.findViewById(R.id.start_button)
         startButton.setOnClickListener {
             Log.d("GPS", "start button")
