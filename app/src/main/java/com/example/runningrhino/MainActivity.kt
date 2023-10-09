@@ -66,6 +66,10 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
         Log.d("GPS", "onCreate maps")
         super.onCreate(savedInstanceState)
 
+        if (savedInstanceState != null) {
+            sharedViewModel.restoreState(savedInstanceState)
+        }
+
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -94,6 +98,11 @@ class MainActivity : AppCompatActivity(), TrackingCallback {
         createNotificationChannel(Constants.FOREGROUND_SERVICE_CHANNEL)
 
         navController.navigate(R.id.mapsFragment)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        sharedViewModel.saveState(outState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
